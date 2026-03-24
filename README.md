@@ -1,6 +1,6 @@
 # Face Recognition Attendance System
 
-## 📝 About the Project
+## About the Project
 
 A real-time **face recognition-based attendance system** built with **Flask**, **OpenCV**, and **face_recognition**. This project enables automatic attendance marking, user management, live monitoring, and reporting—all from a modern web dashboard.
 
@@ -20,17 +20,19 @@ Special thanks to Perplexity AI for assisting me in generating and refining thes
 - Filtering attendance records by date and name
 - Secure admin authentication
 
-## 🖥️ **Web Interface Screenshots**
+## **Web Interface Screenshots**
 
 ### **Admin Login Page**
 ![Admin Login](docs/images/login_page.png)
+
 *Modern, secure glassmorphism authentication interface*
 
 ### **Main Dashboard**
 ![Admin Dashboard](docs/images/admin_dashboard.png)
+
 *Complete attendance management with real-time camera feed and operations panel*
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 face_recognision/                         # 🔸 Main project folder
@@ -72,7 +74,7 @@ face_recognision/                         # 🔸 Main project folder
     └── thumbnails/                       # stores the best photo as per model
 ```
 
-## ⬇️ Installation Steps
+## Installation Steps
 
 1. **Clone the Repository**
 ```bash
