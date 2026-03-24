@@ -131,7 +131,7 @@ Put YuNet and liveness models inside the `models/` folder.
 ```bash
 python dashboard/app.py
 ```
-Visit [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+Visit [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
 
 ## 🔑 Default Admin Credentials
 > You can change these in `app.py`
