@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceID — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #080812;
+            --surface: #0f0f1e;
+            --surface2: #13131f;
+            --border: rgba(255,255,255,0.07);
+            --border-h: rgba(255,255,255,0.13);
+            --accent: #7c6ef7;
+            --accent2: #a78bfa;
+            --cyan: #22d3ee;
+            --green: #34d399;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --text: #e2e2f0;
+            --muted: #6b6b8a;
+            --card-glow: 0 8px 32px rgba(0,0,0,0.45);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ── Static orb accents ── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px; left: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(124,110,247,0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -200px; right: -200px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(124,110,247,0.3); border-radius: 99px; }
+
+        /* ─────────────────────────────────────────
+           TOPBAR
+        ───────────────────────────────────────── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(8,8,18,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            height: 62px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.3px;
+            color: var(--text);
+        }
+
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(124,110,247,0.4);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-dot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .live-dot::before {
+            content: '';
+            width: 7px; height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--green);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ── Nav link buttons ── */
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--border-h);
+            color: var(--text);
+            background: rgba(255,255,255,0.07);
+        }
+
+        .nav-btn.danger:hover { border-color: rgba(248,113,113,0.4); color: var(--red); }
+
+        /* ─────────────────────────────────────────
+           MAIN LAYOUT
+        ───────────────────────────────────────── */
+        .main {
+            position: relative;
+            z-index: 1;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 28px 24px 48px;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── Generic glass card ── */
+        .glass {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .glass:hover {
+            border-color: var(--border-h);
+            box-shadow: var(--card-glow);
+        }
+
+        /* ─────────────────────────────────────────
+           CAMERA STRIP (full width)
+        ───────────────────────────────────────── */
+        .camera-strip {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: start;
+            margin-bottom: 28px;
+        }
+
+        .camera-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: #000;
+            aspect-ratio: 16/7;
+        }
+
+        .camera-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Scan overlay on top of camera */
+        .cam-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .cam-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--cyan), transparent);
+            animation: scan 3s linear infinite;
+            box-shadow: 0 0 16px var(--accent);
+        }
+
+        @keyframes scan {
+            0%   { top: 0%; opacity: 1; }
+            90%  { top: 100%; opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .cam-corner {
+            position: absolute;
+            width: 18px; height: 18px;
+            border-color: var(--accent);
+            border-style: solid;
+        }
+
+        .cam-corner.tl { top: 10px; left: 10px;  border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+        .cam-corner.tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+        .cam-corner.bl { bottom: 10px; left: 10px;  border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+        .cam-corner.br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+        .cam-label {
+            position: absolute;
+            bottom: 12px;
+            left: 14px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-h);
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        .cam-instruction {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(124,110,247,0.18);
+            border: 1px solid rgba(124,110,247,0.35);
+            border-radius: 99px;
+            padding: 4px 18px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent2);
+            white-space: nowrap;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        .cam-instruction.visible { opacity: 1; }
+
+        /* ─────────────────────────────────────────
+           CAPTURE CONTROLS SIDEBAR
+        ───────────────────────────────────────── */
+        .cam-controls {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .person-input {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.87rem;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .person-input::placeholder { color: var(--muted); }
+
+        .person-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,110,247,0.12);
+        }
+
+        /* ── Action buttons ── */
+        .act-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .act-btn.green {
+            background: rgba(52,211,153,0.1);
+            border-color: rgba(52,211,153,0.25);
+            color: var(--green);
+        }
+        .act-btn.green:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.5); }
+
+        .act-btn.purple {
+            background: rgba(124,110,247,0.1);
+            border-color: rgba(124,110,247,0.25);
+            color: var(--accent2);
+        }
+        .act-btn.purple:hover { background: rgba(124,110,247,0.18); border-color: rgba(124,110,247,0.5); }
+
+        .act-btn.red {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.2);
+            color: var(--red);
+        }
+        .act-btn.red:hover { background: rgba(248,113,113,0.15); border-color: rgba(248,113,113,0.4); }
+
+        .act-btn.cyan {
+            background: rgba(34,211,238,0.08);
+            border-color: rgba(34,211,238,0.2);
+            color: var(--cyan);
+        }
+        .act-btn.cyan:hover { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.4); }
+
+        .act-btn.yellow {
+            background: rgba(251,191,36,0.08);
+            border-color: rgba(251,191,36,0.2);
+            color: var(--yellow);
+        }
+        .act-btn.yellow:hover { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); }
+
+        .act-btn.dark {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        .act-btn.dark:hover { background: rgba(255,255,255,0.09); border-color: var(--border-h); }
+
+        .act-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+        .divider-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            text-align: center;
+            padding: 2px 0;
+        }
+
+        /* ─────────────────────────────────────────
+           OPERATIONS ROW
+        ───────────────────────────────────────── */
+        .ops-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .op-card {
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .op-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .op-card:hover { transform: translateY(-3px); border-color: var(--border-h); }
+        .op-card:hover::before { opacity: 1; }
+
+        .op-card.encode::before  { background: linear-gradient(90deg, var(--yellow), #f59e0b); }
+        .op-card.recog::before   { background: linear-gradient(90deg, var(--cyan), #0284c7); }
+        .op-card.attend::before  { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+        .op-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .op-icon.yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
+        .op-icon.cyan   { background: rgba(34,211,238,0.12);  color: var(--cyan); }
+        .op-icon.purple { background: rgba(124,110,247,0.12); color: var(--accent2); }
+
+        .op-card h3 { font-size: 0.93rem; font-weight: 700; color: var(--text); }
+        .op-card p  { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+        /* ─────────────────────────────────────────
+           UPLOAD & MANAGEMENT ROW
+        ───────────────────────────────────────── */
+        .manage-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .manage-card {
+            padding: 22px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .manage-card h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-input-wrap {
+            position: relative;
+            overflow: hidden;
+            display: block;
+        }
+
+        .file-input-wrap input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-drop-area {
+            border: 1.5px dashed rgba(124,110,247,0.3);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: rgba(124,110,247,0.04);
+        }
+
+        .file-drop-area:hover {
+            border-color: rgba(124,110,247,0.6);
+            background: rgba(124,110,247,0.08);
+            color: var(--accent2);
+        }
+
+        .file-drop-area i { font-size: 20px; display: block; margin-bottom: 6px; }
+
+        /* ─────────────────────────────────────────
+           FILTER ROW
+        ───────────────────────────────────────── */
+        .filter-card {
+            padding: 20px 22px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 22px;
+        }
+
+        .filter-card h4 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-field { flex: 1; min-width: 160px; }
+
+        .filter-field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-field input {
+            width: 100%;
+            padding: 9px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.83rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .filter-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,110,247,0.1); }
+        .filter-field input::placeholder { color: var(--muted); }
+        .filter-field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
+
+        /* ─────────────────────────────────────────
+           ATTENDANCE TABLE
+        ───────────────────────────────────────── */
+        .table-wrapper {
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            background: rgba(255,255,255,0.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th {
+            padding: 13px 18px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+        tbody td {
+            padding: 13px 18px;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 0.71rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.name-badge {
+            background: rgba(124,110,247,0.12);
+            border: 1px solid rgba(124,110,247,0.25);
+            color: var(--accent2);
+        }
+
+        .time-cell { font-family: 'Inter', monospace; font-size: 0.82rem; color: var(--muted); }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state i { font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.4; }
+        .empty-state p { font-size: 0.85rem; }
+
+        /* ─────────────────────────────────────────
+           TOAST NOTIFICATION (replaces alert div)
+        ───────────────────────────────────────── */
+        #toast-container {
+            position: fixed;
+            top: 78px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            max-width: 340px;
+            pointer-events: auto;
+            animation: toastIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .toast.success {
+            background: rgba(15,25,20,0.95);
+            border: 1px solid rgba(52,211,153,0.35);
+            color: var(--green);
+        }
+
+        .toast.error {
+            background: rgba(25,10,10,0.95);
+            border: 1px solid rgba(248,113,113,0.35);
+            color: var(--red);
+        }
+
+        .toast.info {
+            background: rgba(10,15,25,0.95);
+            border: 1px solid rgba(34,211,238,0.3);
+            color: var(--cyan);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(24px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ─────────────────────────────────────────
+           VIDEO MODAL
+        ───────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border-h);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 780px;
+            overflow: hidden;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+            animation: modalIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.93) translateY(24px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-head h5 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            color: var(--muted);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover { border-color: var(--red); color: var(--red); }
+
+        .modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-body img {
+            width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        /* ─────────────────────────────────────────
+           RESPONSIVE
+        ───────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .camera-strip { grid-template-columns: 1fr; }
+            .cam-controls { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .cam-controls > * { flex: 1 1 calc(50% - 6px); min-width: 120px; }
+            .ops-row { grid-template-columns: 1fr; }
+            .manage-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .main { padding: 16px 12px 40px; }
+            .topbar { padding: 0 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-face-viewfinder"></i></div>
+        FaceID
+    </div>
+    <div class="topbar-right">
+        <div class="live-dot">System Live</div>
+        <a href="/export_csv" class="nav-btn" title="Export CSV">
+            <i class="fa-solid fa-download"></i> Export
+        </a>
+        <a href="/logout" class="nav-btn danger" title="Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+        </a>
+    </div>
+</header>
+
+<!-- ── Toast container ── -->
+<div id="toast-container"></div>
+
+<!-- ── Main ── -->
+<main class="main">
+
+    <!-- ════ CAMERA + CAPTURE CONTROLS ════ -->
+    <p class="section-title"><i class="fa-solid fa-camera" style="color:var(--accent)"></i> Live Camera</p>
+
+    <div class="camera-strip">
+        <!-- Camera feed -->
+        <div class="camera-card">
+            <img id="live_camera" src="{{ url_for('video_feed') }}" alt="Live Camera Feed">
+            <div class="cam-overlay">
+                <div class="cam-corner tl"></div>
+                <div class="cam-corner tr"></div>
+                <div class="cam-corner bl"></div>
+                <div class="cam-corner br"></div>
+            </div>
+            <div class="cam-label" id="cam_status_label">
+                <i class="fa-solid fa-circle" style="color:var(--green);font-size:7px;"></i>
+                &nbsp;CAMERA ACTIVE
+            </div>
+            <div class="cam-instruction" id="direction_instruction"></div>
+        </div>
+
+        <!-- Capture controls sidebar -->
+        <div class="cam-controls">
+            <input type="text" class="person-input" id="person_name" placeholder="Enter person name…">
+
+            <div class="divider-label">Capture Session</div>
+
+            <button class="act-btn green" id="start_capture_btn">
+                <i class="fa-solid fa-play"></i> Start Capture
+            </button>
+            <button class="act-btn purple" id="capture_btn" disabled>
+                <i class="fa-solid fa-camera"></i> Capture Photo
+            </button>
+            <button class="act-btn red" id="stop_capture_btn">
+                <i class="fa-solid fa-stop"></i> Stop Capture
+            </button>
+
+            <div class="divider-label">Management</div>
+
+            <button class="act-btn cyan" onclick="markAttendance()">
+                <i class="fa-solid fa-user-check"></i> Mark Attendance
+            </button>
+            <button class="act-btn red" onclick="removePerson()">
+                <i class="fa-solid fa-user-minus"></i> Remove Person
+            </button>
+        </div>
+    </div>
+
+    <!-- ════ OPERATIONS CARDS ════ -->
+    <p class="section-title"><i class="fa-solid fa-bolt" style="color:var(--yellow)"></i> Operations</p>
+
+    <div class="ops-row">
+        <div class="op-card encode" onclick="generateEncodings()">
+            <div class="op-icon yellow"><i class="fa-solid fa-microchip"></i></div>
+            <h3>Generate Encodings</h3>
+            <p>Process all dataset images and generate face embeddings for recognition.</p>
+        </div>
+        <div class="op-card recog" onclick="testRecognition()">
+            <div class="op-icon cyan"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h3>Test Recognition</h3>
+            <p>Live camera test with YuNet detection and confidence score overlay.</p>
+        </div>
+        <div class="op-card attend" onclick="openPopup('/popup_real_time_attendance', 820, 640)">
+            <div class="op-icon purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <h3>Live Attendance</h3>
+            <p>Start real-time face recognition attendance tracking in a new window.</p>
+        </div>
+    </div>
+
+    <!-- ════ UPLOAD PHOTO ════ -->
+    <p class="section-title"><i class="fa-solid fa-upload" style="color:var(--cyan)"></i> Upload Photo</p>
+
+    <div class="manage-row">
+        <div class="manage-card">
+            <h4><i class="fa-solid fa-image"></i> Photo Upload</h4>
+            <div class="file-input-wrap" id="fileDropWrap">
+                <input type="file" id="upload_image" accept="image/*" onchange="updateDropLabel()">
+                <div class="file-drop-area" id="dropLabel">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    Click or drag an image here
+                </div>
+            </div>
+            <button class="act-btn green" style="margin-top:12px;" onclick="uploadPhoto()">
+                <i class="fa-solid fa-upload"></i> Upload Photo
+            </button>
+        </div>
+
+        <div class="manage-card">
+            <h4><i class="fa-solid fa-circle-info"></i> Quick Info</h4>
+            <div style="font-size:0.8rem; color:var(--muted); line-height:1.8;">
+                <div><i class="fa-solid fa-1" style="color:var(--accent);width:18px"></i> Enter person name above</div>
+                <div><i class="fa-solid fa-2" style="color:var(--accent);width:18px"></i> Start Capture → take 5 pose photos</div>
+                <div><i class="fa-solid fa-3" style="color:var(--accent);width:18px"></i> OR upload photos via the form</div>
+                <div><i class="fa-solid fa-4" style="color:var(--accent);width:18px"></i> Generate Encodings</div>
+                <div><i class="fa-solid fa-5" style="color:var(--accent);width:18px"></i> Test Recognition or start Live Attendance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ ATTENDANCE RECORDS ════ -->
+    <p class="section-title"><i class="fa-solid fa-list-check" style="color:var(--green)"></i> Attendance Records</p>
+
+    <div class="filter-card">
+        <h4><i class="fa-solid fa-filter"></i> Filter Records</h4>
+        <form class="filter-row" method="get" action="">
+            <div class="filter-field">
+                <label>Filter by Name</label>
+                <input type="text" name="filter_name" placeholder="eg. Abhay Dwivedi" value="{{ request.args.get('filter_name', '') }}">
+            </div>
+            <div class="filter-field">
+                <label>Filter by Date</label>
+                <input type="date" name="filter_date" value="{{ request.args.get('filter_date', '') }}">
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+                <button type="submit" class="act-btn purple" style="width:auto;padding:9px 18px;">
+                    <i class="fa-solid fa-filter"></i> Apply
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="act-btn dark" style="width:auto;padding:9px 18px;text-decoration:none;">
+                    <i class="fa-solid fa-xmark"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Entry Time</th>
+                    <th>Exit Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td><span class="badge name-badge"><i class="fa-solid fa-user" style="font-size:9px"></i> {{ record.name }}</span></td>
+                    <td>{{ record.date }}</td>
+                    <td class="time-cell">{{ record.entry_time }}</td>
+                    <td class="time-cell">{{ record.exit_time or '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-database"></i>
+                            <p>No attendance records found.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<!-- ── Video Modal ── -->
+<div class="modal-overlay" id="videoModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5 id="videoModalLabel">
+                <i class="fa-solid fa-camera"></i>
+                Live Feed
+            </h5>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <img id="videoFeed" src="" alt="Video Feed">
+        </div>
+    </div>
+</div>
+
+<script>
+/* ───────────────────────────────────────
+   TOAST SYSTEM
+─────────────────────────────────────── */
+function showToast(msg, type = 'success') {
+    const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${msg}`;
+    container.appendChild(toast);
+    // Also speak via browser
+    if ('speechSynthesis' in window && msg) {
+        let u = new SpeechSynthesisUtterance(msg);
+        u.rate = 1.1;
+        window.speechSynthesis.speak(u);
+    }
+    setTimeout(() => {
+        toast.style.animation = 'none';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(24px)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 310);
+    }, 4000);
+}
+
+// Keep legacy showResult as alias
+function showResult(msg, success = true) {
+    showToast(msg, success ? 'success' : 'error');
+}
+
+/* ───────────────────────────────────────
+   FILE DROP LABEL UPDATE
+─────────────────────────────────────── */
+function updateDropLabel() {
+    const file = document.getElementById('upload_image').files[0];
+    const label = document.getElementById('dropLabel');
+    if (file) {
+        label.innerHTML = `<i class="fa-solid fa-file-image"></i> ${file.name}`;
+        label.style.color = 'var(--accent2)';
+        label.style.borderColor = 'rgba(124,110,247,0.5)';
+    }
+}
+
+/* ───────────────────────────────────────
+   CAPTURE SESSION
+─────────────────────────────────────── */
+let captureActive = false;
+let face_encodings_loaded = true;
+
+document.getElementById('start_capture_btn').onclick = async function () {
+    const person_name = document.getElementById('person_name').value.trim();
+    if (!person_name) return showToast('Enter a person name first', 'error');
+    const res = await fetch('/start_capture', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+        captureActive = true;
+        document.getElementById('capture_btn').disabled = false;
+        document.getElementById('start_capture_btn').disabled = true;
+        const instr = document.getElementById('direction_instruction');
+        instr.textContent = data.instruction;
+        instr.classList.add('visible');
+        showToast(data.message, 'success');
+    } else {
+        showToast(data.message, 'error');
+    }
+};
+
+document.getElementById('capture_btn').onclick = async function () {
+    if (!captureActive) return;
+    const person_name = document.getElementById('person_name').value.trim();
+    if (!person_name) return showToast('Enter person name', 'error');
+    const res = await fetch('/capture_photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person_name })
+    });
+    const data = await res.json();
+    showToast(data.message, data.success ? 'success' : 'error');
+    const instr = document.getElementById('direction_instruction');
+    if (data.instruction) {
+        instr.textContent = data.instruction;
+        instr.classList.add('visible');
+    } else {
+        instr.textContent = '';
+        instr.classList.remove('visible');
+    }
+    if (data.finished) {
+        document.getElementById('capture_btn').disabled = true;
+    }
+};
+
+document.getElementById('stop_capture_btn').onclick = async function () {
+    const res = await fetch('/stop_capture', { method: 'POST' });
+    const data = await res.json();
+    showToast(data.message, 'info');
+    captureActive = false;
+    document.getElementById('capture_btn').disabled = true;
+    document.getElementById('start_capture_btn').disabled = false;
+    const instr = document.getElementById('direction_instruction');
+    instr.textContent = '';
+    instr.classList.remove('visible');
+};
+
+// ENTER key shortcut for capture
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && captureActive && !document.getElementById('capture_btn').disabled) {
+        document.getElementById('capture_btn').click();
+    }
+});
+
+/* ───────────────────────────────────────
+   PHOTO UPLOAD
+─────────────────────────────────────── */
+function uploadPhoto() {
+    const person_name = document.getElementById('person_name').value.trim();
+    const image = document.getElementById('upload_image').files[0];
+    if (!person_name || !image) return showToast('Select both a name and an image', 'error');
+    const formData = new FormData();
+    formData.append('person_name', person_name);
+    formData.append('image', image);
+    fetch('/upload_photo', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => showToast(data.message, data.success ? 'success' : 'error'));
+}
+
+/* ───────────────────────────────────────
+   GENERATE ENCODINGS
+─────────────────────────────────────── */
+function generateEncodings() {
+    showToast('Generating encodings… this may take a moment', 'info');
+    fetch('/generate_encodings', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => showToast(data.message, data.success ? 'success' : 'error'));
+}
+
+/* ───────────────────────────────────────
+   MARK ATTENDANCE
+─────────────────────────────────────── */
+function markAttendance() {
+    const person_name = document.getElementById('person_name').value.trim();
+    if (!person_name) return showToast('Enter person name', 'error');
+    fetch('/mark_attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person_name })
+    })
+    .then(r => r.json())
+    .then(data => showToast(data.message, data.success ? 'success' : 'error'));
+}
+
+/* ───────────────────────────────────────
+   REMOVE PERSON
+─────────────────────────────────────── */
+function removePerson() {
+    const person_name = document.getElementById('person_name').value.trim();
+    if (!person_name) return showToast('Enter person name', 'error');
+    if (!confirm(`Remove "${person_name}" from the system? This cannot be undone.`)) return;
+    fetch('/remove_person', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person_name })
+    })
+    .then(r => r.json())
+    .then(data => showToast(data.message, data.success ? 'success' : 'error'));
+}
+
+/* ───────────────────────────────────────
+   MODAL VIDEO FEED
+─────────────────────────────────────── */
+let isRecognitionFeed = false;
+
+function showVideoModal(feedUrl, title = 'Live Camera Feed') {
+    isRecognitionFeed = feedUrl.includes('recognition');
+    document.getElementById('videoFeed').src = feedUrl;
+    document.getElementById('videoModalLabel').innerHTML =
+        `<i class="fa-solid fa-${isRecognitionFeed ? 'magnifying-glass' : 'camera'}"></i> ${title}`;
+    document.getElementById('videoModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('videoModal').classList.remove('open');
+    document.getElementById('videoFeed').src = '';
+    if (isRecognitionFeed) {
+        fetch('/stop_recognition_feed', { method: 'POST' }).catch(() => {});
+        isRecognitionFeed = false;
+    }
+}
+
+// Close modal on overlay click
+document.getElementById('videoModal').addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+});
+
+/* ───────────────────────────────────────
+   TEST RECOGNITION
+─────────────────────────────────────── */
+function testRecognition() {
+    showVideoModal('/test_recognition_feed', 'Test Recognition — Live Feed');
+}
+
+/* ───────────────────────────────────────
+   POPUP HELPER
+─────────────────────────────────────── */
+function openPopup(url, w = 600, h = 600) {
+    window.open(url, '_blank', `width=${w},height=${h}`);
+}
+</script>
+</body>
+</html>

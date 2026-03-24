@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceID — Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent: #7c6ef7;
+            --accent2: #a78bfa;
+            --bg: #0a0a14;
+            --surface: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --text: #e8e8f0;
+            --muted: #7b7b9a;
+            --danger: #f87171;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* ── Animated canvas background ── */
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        /* ── Glowing orbs ── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.18;
+            animation: drift 12s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+        .orb-1 { width: 520px; height: 520px; background: #7c6ef7; top: -160px; left: -160px; animation-delay: 0s; }
+        .orb-2 { width: 400px; height: 400px; background: #06b6d4; bottom: -120px; right: -80px; animation-delay: -5s; }
+        .orb-3 { width: 280px; height: 280px; background: #a78bfa; top: 50%; left: 55%; animation-delay: -3s; }
+
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(30px, 20px) scale(1.08); }
+        }
+
+        /* ── Layout ── */
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 0 20px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 44px 40px 36px;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(32px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Logo / Header ── */
+        .logo-ring {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c6ef7, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            color: #fff;
+            box-shadow: 0 0 0 8px rgba(124,110,247,0.15), 0 12px 32px rgba(124,110,247,0.35);
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from { box-shadow: 0 0 0 8px rgba(124,110,247,0.15), 0 12px 32px rgba(124,110,247,0.35); }
+            to   { box-shadow: 0 0 0 14px rgba(124,110,247,0.08), 0 16px 48px rgba(124,110,247,0.5); }
+        }
+
+        .card h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #e8e8f0 40%, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .card .subtitle {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+        }
+
+        /* ── Secure badge ── */
+        .secure-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.25);
+            color: #34d399;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 99px;
+            margin: 0 auto 28px;
+            width: fit-content;
+            display: flex;
+        }
+
+        /* ── Input fields ── */
+        .field {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .field-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 14px;
+            transition: color 0.25s;
+            z-index: 2;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            outline: none;
+        }
+
+        .field input::placeholder { color: var(--muted); }
+
+        .field input:focus {
+            border-color: var(--accent);
+            background: rgba(124,110,247,0.06);
+            box-shadow: 0 0 0 4px rgba(124,110,247,0.12);
+        }
+
+        .field input:focus + .field-label-anim,
+        .field:focus-within .field-icon { color: var(--accent2); }
+
+        /* ── Error alert ── */
+        .error-box {
+            background: rgba(248,113,113,0.1);
+            border: 1px solid rgba(248,113,113,0.3);
+            color: var(--danger);
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-size: 0.83rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Submit button ── */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c6ef7, #a78bfa);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 28px rgba(124,110,247,0.4);
+            margin-top: 6px;
+        }
+
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(124,110,247,0.55); }
+        .btn-submit:hover::after { opacity: 1; }
+        .btn-submit:active { transform: translateY(0); }
+
+        .btn-submit .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .footer span { color: var(--accent2); font-weight: 600; }
+
+        /* ── Scan line decoration ── */
+        .scan-line {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 24px 0 20px;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Glowing orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="login-wrapper">
+        <div class="card">
+            <div class="logo-ring"><i class="fa-solid fa-face-viewfinder"></i></div>
+            <h1>FaceID Portal</h1>
+            <p class="subtitle">Admin access · Face Recognition System</p>
+
+            <div class="secure-pill">
+                <i class="fa-solid fa-shield-check" style="font-size:10px;"></i>
+                Encrypted Session
+            </div>
+
+            {% if error %}
+            <div class="error-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" id="loginForm">
+                <div class="field">
+                    <i class="fa-solid fa-user field-icon"></i>
+                    <input type="text" name="username" placeholder="Username" required autocomplete="username" id="usernameInput">
+                </div>
+                <div class="field">
+                    <i class="fa-solid fa-lock field-icon"></i>
+                    <input type="password" name="password" placeholder="Password" required autocomplete="current-password" id="passwordInput">
+                </div>
+
+                <button type="submit" class="btn-submit" id="loginBtn">
+                    <span class="spinner" id="spinner"></span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    &nbsp;Access Dashboard
+                </button>
+            </form>
+
+            <div class="scan-line"></div>
+
+            <div class="footer">
+                Powered by <span>YuNet · dlib</span> &nbsp;·&nbsp; &copy; 2025 FaceID System
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function () {
+            const btn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'inline-block';
+            btn.disabled = true;
+            btn.style.opacity = '0.75';
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }, 4000);
+        });
+    </script>
+</body>
+</html>

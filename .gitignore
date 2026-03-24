@@ -1,0 +1,21 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+
+# Ignore Conda environment/config files (if not needed for sharing)
+.conda/
+
+# Ignore database files (contains user data, can be regenerated)
+database/attendance.db
+
+# Ignore exported data/reports (if large or sensitive)
+exports/
+
+# Ignore face encodings (can be large, can be regenerated)
+encodings/
+
+# Ignore thumbnails (auto-generated images)
+static/thumbnails/
+
+venv
+.vscode
